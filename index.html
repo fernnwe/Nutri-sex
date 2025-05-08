@@ -181,27 +181,28 @@
     });
 
     // Función para descargar PDF
-    document.getElementById("downloadPDF").addEventListener("click", () => {
-      const resultDiv = document.getElementById("result");
-      const chartCanvas = document.getElementById("calorieChart");
+document.getElementById("downloadPDF").addEventListener("click", () => {
+  const resultDiv = document.getElementById("result");
+  const chartCanvas = document.getElementById("calorieChart");
 
-      // Convertir el gráfico en una imagen base64
-      const chartImage = chartCanvas.toDataURL("image/png");
+  // Convertir el gráfico en una imagen base64
+  const chartImage = chartCanvas.toDataURL("image/png");
 
-      // Crear el PDF
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      
-      // Añadir los resultados al PDF
-      doc.html(resultDiv, {
-        callback: function (doc) {
-          doc.addImage(chartImage, 'PNG', 15, 90, 180, 120); // Añadir gráfico al PDF
-          doc.save('resultado_calorias.pdf');
-        },
-        x: 10,
-        y: 10
-      });
-    });
+  // Crear el PDF
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  
+  // Agregar los resultados como texto al PDF
+  const resultText = resultDiv.innerHTML.replace(/<br>/g, '\n').replace(/<strong>/g, '').replace(/<\/strong>/g, '');
+  doc.text(resultText, 10, 10);
+
+  // Añadir el gráfico al PDF
+  doc.addImage(chartImage, 'PNG', 15, 50, 180, 120); // Añadir gráfico al PDF (ajustando posición y tamaño)
+
+  // Guardar el PDF
+  doc.save('resultado_calorias.pdf');
+});
+
   </script>
 
 </body>
