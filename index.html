@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Calculadora de Calorías</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            inter: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            primary: '#6366f1',
+            secondary: '#10b981',
+          },
+        },
+      },
+    };
+  </script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>body { font-family: 'Inter', sans-serif; }</style>
+</head>
+<body class="bg-gradient-to-tr from-indigo-100 to-white dark:from-gray-900 dark:to-gray-800 min-h-screen text-gray-800 dark:text-white transition-colors">
+
+  <!-- Navbar -->
+  <header class="flex justify-between items-center px-6 py-4 shadow-md bg-white/70 dark:bg-gray-900/70 backdrop-blur-md fixed top-0 left-0 right-0 z-50">
+    <h1 class="text-2xl font-bold text-primary">NutriSex</h1>
+    <button id="themeToggle" class="text-indigo-600 dark:text-indigo-300 hover:scale-110 transition">
+        <span id="themeIcon"></span>
+      </button>
+      
+  </header>
+
+  <!-- Main Content -->
+  <main class="pt-24 px-4 flex justify-center">
+    <div class="w-full max-w-3xl bg-white/60 dark:bg-gray-800/60 backdrop-blur-xl rounded-3xl shadow-2xl p-8 transition-colors">
+
+      <h2 class="text-3xl font-bold text-center mb-6 text-primary dark:text-indigo-400">Calculadora de Calorías Diarias</h2>
+
+      <form id="calorie-form" class="grid md:grid-cols-2 gap-6">
+        <div>
+          <label class="block font-semibold mb-1">Género</label>
+          <select id="gender" class="w-full rounded-lg p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600">
+            <option value="male">Masculino</option>
+            <option value="female">Femenino</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-1">Peso (kg)</label>
+          <input id="weight" type="number" class="w-full rounded-lg p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600" required />
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-1">Altura (cm)</label>
+          <input id="height" type="number" class="w-full rounded-lg p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600" required />
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-1">Edad (años)</label>
+          <input id="age" type="number" class="w-full rounded-lg p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600" required />
+        </div>
+
+        <div class="md:col-span-2">
+          <label class="block font-semibold mb-1">Nivel de Actividad Física</label>
+          <select id="activity" class="w-full rounded-lg p-2 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600">
+            <option value="1.2">Sedentario</option>
+            <option value="1.375">Ligeramente activo</option>
+            <option value="1.55">Moderadamente activo</option>
+            <option value="1.725">Muy activo</option>
+            <option value="1.9">Extremadamente activo</option>
+          </select>
+        </div>
+
+        <div class="md:col-span-2">
+          <button type="submit" class="w-full py-2 bg-primary hover:bg-indigo-700 text-white font-semibold rounded-lg transition">
+            Calcular
+          </button>
+        </div>
+      </form>
+
+      <div id="result" class="mt-6 hidden text-center p-4 bg-primary/10 dark:bg-primary/20 text-indigo-800 dark:text-indigo-200 rounded-lg font-medium"></div>
+
+      <canvas id="calorieChart" class="mt-6 hidden"></canvas>
+    </div>
+  </main>
+
+  <script>
+    const toggleBtn = document.getElementById('themeToggle');
+    const iconContainer = document.getElementById('themeIcon');
+  
+    function renderThemeIcon() {
+      const isDark = document.documentElement.classList.contains('dark');
+      iconContainer.innerHTML = ''; // limpiar ícono actual
+      const newIcon = document.createElement('i');
+      newIcon.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+      iconContainer.appendChild(newIcon);
+      lucide.createIcons(); // regenerar íconos de Lucide
+    }
+  
+    // Establecer ícono al cargar
+    document.addEventListener('DOMContentLoaded', renderThemeIcon);
+  
+    toggleBtn.addEventListener('click', () => {
+      document.documentElement.classList.toggle('dark');
+      renderThemeIcon();
+    });
+  
+    // Calculo de calorías
+    let chart;
+    document.getElementById("calorie-form").addEventListener("submit", function (e) {
+      e.preventDefault();
+  
+      const gender = document.getElementById("gender").value;
+      const weight = parseFloat(document.getElementById("weight").value);
+      const height = parseFloat(document.getElementById("height").value);
+      const age = parseInt(document.getElementById("age").value);
+      const activity = parseFloat(document.getElementById("activity").value);
+  
+      let bmr = (gender === "male")
+        ? 10 * weight + 6.25 * height - 5 * age + 5
+        : 10 * weight + 6.25 * height - 5 * age - 161;
+  
+      const tdee = bmr * activity;
+  
+      const resultDiv = document.getElementById("result");
+      resultDiv.innerHTML = `
+        Tu TMB es <strong>${Math.round(bmr)} kcal</strong>.<br>
+        Tu gasto calórico diario estimado es <strong>${Math.round(tdee)} kcal</strong>.
+      `;
+      resultDiv.classList.remove("hidden");
+  
+      const chartCanvas = document.getElementById("calorieChart");
+      chartCanvas.classList.remove("hidden");
+      const ctx = chartCanvas.getContext("2d");
+  
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels: ["TMB (Reposo)", "TDEE (Total)"],
+          datasets: [{
+            label: "Calorías (kcal)",
+            data: [Math.round(bmr), Math.round(tdee)],
+            backgroundColor: ["#6366f1", "#10b981"],
+            borderRadius: 12,
+          }],
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: context => `${context.raw} kcal`,
+              }
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 200 },
+            }
+          }
+        }
+      });
+    });
+  </script>
+  
+</body>
+</html>
