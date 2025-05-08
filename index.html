@@ -24,6 +24,7 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <style>body { font-family: 'Inter', sans-serif; }</style>
 </head>
 <body class="bg-gradient-to-tr from-indigo-100 to-white dark:from-gray-900 dark:to-gray-800 min-h-screen text-gray-800 dark:text-white transition-colors">
@@ -34,7 +35,6 @@
     <button id="themeToggle" class="text-indigo-600 dark:text-indigo-300 hover:scale-110 transition">
         <span id="themeIcon"></span>
       </button>
-      
   </header>
 
   <!-- Main Content -->
@@ -86,6 +86,11 @@
       </form>
 
       <div id="result" class="mt-6 hidden text-center p-4 bg-primary/10 dark:bg-primary/20 text-indigo-800 dark:text-indigo-200 rounded-lg font-medium"></div>
+
+      <!-- Botón para descargar PDF -->
+      <button id="downloadPDF" class="mt-6 w-full py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-lg transition hidden">
+        Descargar PDF
+      </button>
 
       <canvas id="calorieChart" class="mt-6 hidden"></canvas>
     </div>
@@ -170,8 +175,34 @@
           }
         }
       });
+
+      // Mostrar el botón de descarga
+      document.getElementById("downloadPDF").classList.remove("hidden");
+    });
+
+    // Función para descargar PDF
+    document.getElementById("downloadPDF").addEventListener("click", () => {
+      const resultDiv = document.getElementById("result");
+      const chartCanvas = document.getElementById("calorieChart");
+
+      // Convertir el gráfico en una imagen base64
+      const chartImage = chartCanvas.toDataURL("image/png");
+
+      // Crear el PDF
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      
+      // Añadir los resultados al PDF
+      doc.html(resultDiv, {
+        callback: function (doc) {
+          doc.addImage(chartImage, 'PNG', 15, 90, 180, 120); // Añadir gráfico al PDF
+          doc.save('resultado_calorias.pdf');
+        },
+        x: 10,
+        y: 10
+      });
     });
   </script>
-  
+
 </body>
 </html>
